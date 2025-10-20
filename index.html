@@ -2,585 +2,103 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trò chơi Đường về nhà</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #333;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: rgba(173, 216, 230, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .player-status {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: bold;
-        }
-
-        .dice-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .dice {
-            width: 80px;
-            height: 80px;
-            background-color: white;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .dice:hover {
-            transform: scale(1.05);
-        }
-
-        .dice.rolling {
-            animation: roll 0.5s ease-in-out infinite;
-        }
-
-        @keyframes roll {
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
+        body { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: rgba(173,216,230,0.3); border-radius: 15px; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 20px; color: #2c3e50; }
+        .game-info { display: flex; justify-content: space-between; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .player-status { display: flex; flex-direction: column; gap: 10px; }
+        .status-item { display: flex; align-items: center; gap: 8px; }
+        .dice-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .dice { width: 80px; height: 80px; background: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; cursor: pointer; }
+        .dice.rolling { animation: roll 0.5s infinite; }
+        @keyframes roll { 
             0% { transform: rotate(0deg); }
-            25% { transform: rotate(90deg); }
-            50% { transform: rotate(180deg); }
-            75% { transform: rotate(270deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 5px;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto 30px;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .cell {
-            aspect-ratio: 1;
-            background-color: #ffffff;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: relative;
-            transition: all 0.3s;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
-        }
-
-        .cell.start {
-            background-color: #2ecc71;
-        }
-
-        .cell.end {
-            background-color: #e74c3c;
-        }
-
-        .cell.railroad {
-            background-color: #e67e22;
-        }
-
-        .cell.nem-chua {
-            background-color: #ffeb3b;
-        }
-
-        .cell.sandal {
-            background-color: #ff9800;
-        }
-
-        .cell.rau-ma {
-            background-color: #4caf50;
-        }
-
-        .cell.dinh-nam {
-            background-color: #8B4513;
-        }
-
-        .cell.thu-do {
-            background-color: #e74c3c;
-        }
-
-        .cell.special-36 {
-            background-color: #9c27b0;
-        }
-
-        .cell.player {
-            background-color: #3498db;
-            color: white;
-            box-shadow: 0 0 10px 2px rgba(52, 152, 219, 0.8);
-            z-index: 10;
-        }
-
-        .cell-number {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            font-size: 10px;
-            color: rgba(0, 0, 0, 0.7);
-        }
-
-        .cell-icon {
-            font-size: 18px;
-        }
-
-        .message-box {
-            width: 100%;
-            max-width: 1200px;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            min-height: 80px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            color: #2c3e50;
-        }
-
-        .instructions {
-            width: 100%;
-            max-width: 1200px;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-        .instructions h3 {
-            margin-bottom: 10px;
-        }
-
-        .instructions ul {
-            list-style-type: none;
-            padding-left: 10px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .instructions li {
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-
-        button {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        button:hover {
-            background-color: #c0392b;
-        }
-
-        /* Tooltip styles */
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 14px;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Victory celebration styles */
-        .victory-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            flex-direction: column;
-        }
-
-        .victory-message {
-            font-size: 48px;
-            font-weight: bold;
-            color: gold;
-            text-align: center;
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-            animation: pulse 1.5s infinite;
-        }
-
-        .trophy {
-            font-size: 100px;
-            animation: bounce 2s infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes pulse {
+        .board { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; background: rgba(255,255,255,0.7); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .cell { aspect-ratio: 1; background: white; border-radius: 5px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #e0e0e0; }
+        .cell.start { background: #2ecc71; }
+        .cell.end { background: #e74c3c; }
+        .cell.railroad { background: #e67e22; }
+        .cell.nem-chua { background: #ffeb3b; }
+        .cell.sandal { background: #ff9800; }
+        .cell.rau-ma { background: #4caf50; }
+        .cell.dinh-nam { background: #8B4513; }
+        .cell.thu-do { background: #e74c3c; }
+        .cell.special-36 { background: #9c27b0; }
+        .cell.player { background: #3498db; }
+        .cell-number { position: absolute; top: 2px; left: 2px; font-size: 10px; }
+        .cell-icon { font-size: 18px; }
+        button { background: #e74c3c; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; }
+        .victory-overlay, .wheel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 100; }
+        .victory-message { font-size: 48px; color: gold; margin-bottom: 30px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* Wheel spin styles */
-        .wheel-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            flex-direction: column;
-        }
-
-        .wheel-container {
-            width: 300px;
-            height: 300px;
-            position: relative;
-        }
-
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(
-                #e67e22 0% 50%,
-                #3498db 50% 100%
-            );
-            position: relative;
-            transition: transform 3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            transform: rotate(0deg);
-        }
-
-        .wheel-pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 30px;
-            background-color: #e74c3c;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            z-index: 10;
-        }
-
-        .wheel-item {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .wheel-result {
-            margin-top: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
-            text-align: center;
-        }
+        .wheel { width: 300px; height: 300px; border-radius: 50%; background: conic-gradient(#e67e22 0% 50%, #3498db 50% 100%); transition: transform 3s; }
+        .message-box { background: rgba(255,255,255,0.7); padding: 15px; border-radius: 10px; margin-bottom: 20px; width: 100%; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Trò chơi Đường về nhà</h1>
         
+        <div class="message-box" id="message">Chào mừng! Nhấn "Tung xúc xắc" để bắt đầu.</div>
+        
         <div class="game-info">
             <div class="player-status">
-                <div class="status-item">
-                    <div class="icon" style="background-color: #ffeb3b;">N</div>
-                    <span>Nem chua: 
-                        <span id="nem-chua-count">0</span>
-                        <span class="tooltip">?
-                            <span class="tooltiptext">Ít thịt nhiều lá, nhưng ngon miễn nhiễm đường tàu 1 lần (tối đa 1 nem)</span>
-                        </span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #ff9800;">D</div>
-                    <span>Hiệu ứng dép: 
-                        <span id="sandal-effect">Không</span>
-                        <span class="tooltip">?
-                            <span class="tooltiptext">Bạn bị trộm dép rồiiii! Lượt tiếp theo số điểm xúc xắc là n/2 lấy nguyên</span>
-                        </span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #4caf50;">R</div>
-                    <span>Rau má: 
-                        <span id="rau-ma-count">0</span>
-                        <span class="tooltip">?
-                            <span class="tooltiptext">Ăn rau má phá đường tàu, lượt tiếp theo điểm xúc xắc nhân 2</span>
-                        </span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #8B4513;">Đ</div>
-                    <span>Hiệu ứng Đinh Nạm: 
-                        <span id="dinh-nam-effect">Không</span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #e74c3c;">T</div>
-                    <span>Hiệu ứng Thủ Đô: 
-                        <span id="thu-do-effect">Không</span>
-                    </span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #9c27b0;">B</div>
-                    <span>Hiệu ứng Bão: 
-                        <span id="storm-effect">Không</span>
-                    </span>
-                </div>
+                <div class="status-item">Nem chua: <span id="nem-chua-count">0</span></div>
+                <div class="status-item">Hiệu ứng dép: <span id="sandal-effect">Không</span></div>
+                <div class="status-item">Hiệu ứng Đinh Nạm: <span id="dinh-nam-effect">Không</span></div>
+                <div class="status-item">Hiệu ứng Bão: <span id="storm-effect">Không</span></div>
             </div>
-            
             <div class="dice-container">
                 <div class="dice" id="dice">?</div>
                 <button id="roll-button">Tung xúc xắc</button>
             </div>
-            
             <div class="player-status">
-                <div class="status-item">
-                    <div class="icon" style="background-color: #3498db; color: white;">P</div>
-                    <span>Vị trí: <span id="player-position">0</span></span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #ffffff; color: #333;">B</div>
-                    <span>Bước đi: <span id="steps">0</span></span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #e74c3c; color: white;">V</div>
-                    <span>Vòng: <span id="round">1</span></span>
-                </div>
-                <div class="status-item">
-                    <div class="icon" style="background-color: #2ecc71; color: white;">X</div>
-                    <span>X2 Xúc xắc: 
-                        <span id="double-effect">Không</span>
-                    </span>
-                </div>
+                <div class="status-item">Vị trí: <span id="player-position">1</span></div>
+                <div class="status-item">Bước đi: <span id="steps">0</span></div>
+                <div class="status-item">Vòng: <span id="round">1</span></div>
             </div>
         </div>
         
-        <div class="message-box" id="message">
-            Chào mừng đến với trò chơi! Nhấn "Tung xúc xắc" để bắt đầu.
-        </div>
-        
-        <div class="board" id="board">
-            <!-- Board sẽ được tạo bằng JavaScript -->
-        </div>
-        
-        <div class="instructions">
-            <h3>Hướng dẫn:</h3>
-            <ul>
-                <li>
-                    <div class="legend-icon" style="background-color: #e67e22;">🚂</div>
-                    <span>Đường tàu: Về đường tàu gần nhất phía sau</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #ffeb3b;">🥠</div>
-                    <span>Nem chua: Miễn nhiễm đường tàu 1 lần (tối đa 1 nem)</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #ff9800;">🩴</div>
-                    <span>Dép: Lượt tiếp theo số điểm xúc xắc là n/2 lấy nguyên</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #4caf50;">🌿</div>
-                    <span>Rau má: Lượt tiếp theo điểm xúc xắc nhân 2</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #8B4513;">👤</div>
-                    <span>Đinh Nạm: Lần tiếp theo chỉ được 1 điểm</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #e74c3c;">🏙️</div>
-                    <span>Thủ Đô: Vòng quay may mắn</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #9c27b0;">❓</div>
-                    <span>Ô 36: Vòng quay may mắn</span>
-                </li>
-                <li>
-                    <div class="legend-icon" style="background-color: #2c3e50;">🌪️</div>
-                    <span>Bão Xuân Quang: Giảm 1/2 điểm xúc xắc</span>
-                </li>
-            </ul>
-        </div>
+        <div class="board" id="board"></div>
     </div>
 
-    <!-- Victory Celebration Overlay -->
     <div class="victory-overlay" id="victory-overlay">
-        <div class="trophy">🏆</div>
         <div class="victory-message">Chúc mừng bạn đã chinh phục Thanh Hóa!</div>
         <button onclick="resetGame()">Chơi lại</button>
     </div>
 
-    <!-- Wheel Spin Overlay -->
     <div class="wheel-overlay" id="wheel-overlay">
-        <div class="wheel-container">
-            <div class="wheel-pointer"></div>
-            <div class="wheel" id="wheel">
-                <div class="wheel-item">Về đường tàu</div>
-                <div class="wheel-item">X2 Xúc xắc</div>
-            </div>
-        </div>
+        <div class="wheel" id="wheel"></div>
         <div class="wheel-result" id="wheel-result"></div>
         <button onclick="closeWheel()">Tiếp tục</button>
     </div>
 
     <script>
-        // Khai báo biến toàn cục
-        let playerPosition = 0;
-        let nemChuaCount = 0;
-        let rauMaCount = 0;
-        let sandalEffect = false;
-        let dinhNamEffect = false;
-        let thuDoEffect = false;
-        let stormEffect = false;
-        let doubleEffect = false;
-        let round = 1;
-        let steps = 0;
-        let isRolling = false;
-        let hasVisited36 = false;
-        let hasVisitedThuDo = false;
+        let playerPosition = 0, nemChuaCount = 0, sandalEffect = false, dinhNamEffect = false, doubleEffect = false, stormEffect = false;
+        let round = 1, isRolling = false, hasVisited36 = false, hasVisitedThuDo = false;
         const TOTAL_CELLS = 136;
-
-        // Lưu trữ trạng thái gốc của các ô
         const cellOriginalState = new Map();
 
-        // Tạo bảng trò chơi
         function createBoard() {
             const board = document.getElementById('board');
             board.innerHTML = '';
-            
             for (let i = 0; i < TOTAL_CELLS; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.id = `cell-${i}`;
-                
-                // Thêm số ô
                 const cellNumber = document.createElement('div');
                 cellNumber.className = 'cell-number';
                 cellNumber.textContent = i + 1;
                 cell.appendChild(cellNumber);
-                
-                // Đánh dấu ô bắt đầu và kết thúc
                 if (i === 0) {
                     cell.classList.add('start');
                     const icon = document.createElement('div');
@@ -594,11 +112,9 @@
                     icon.textContent = '🏠';
                     cell.appendChild(icon);
                 }
-                
                 board.appendChild(cell);
             }
-            
-            // Thêm đường tàu (mỗi 15 ô, nhưng không có trong 30 ô cuối)
+
             for (let i = 15; i < TOTAL_CELLS - 30; i += 15) {
                 const cell = document.getElementById(`cell-${i}`);
                 cell.classList.add('railroad');
@@ -606,359 +122,219 @@
                 icon.className = 'cell-icon';
                 icon.textContent = '🚂';
                 cell.appendChild(icon);
-                
-                // Lưu trạng thái gốc
-                cellOriginalState.set(i, {
-                    classes: ['railroad'],
-                    icon: '🚂'
-                });
+                cellOriginalState.set(i, {classes: ['railroad'], icon: '🚂'});
             }
-            
-            // Thêm nem chua (3 nem chua trong mỗi 15 ô)
-            for (let i = 0; i < TOTAL_CELLS; i += 15) {
-                let nemCount = 0;
-                while (nemCount < 3) {
-                    const randomPos = i + Math.floor(Math.random() * 15);
-                    if (randomPos < TOTAL_CELLS && randomPos !== 17 && randomPos !== 28 && randomPos !== 29 && randomPos !== 35 && 
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('railroad')) {
-                        const cell = document.getElementById(`cell-${randomPos}`);
-                        cell.classList.add('nem-chua');
-                        const icon = document.createElement('div');
-                        icon.className = 'cell-icon';
-                        icon.textContent = '🥠';
-                        cell.appendChild(icon);
-                        
-                        // Lưu trạng thái gốc
-                        cellOriginalState.set(randomPos, {
-                            classes: ['nem-chua'],
-                            icon: '🥠'
-                        });
-                        
-                        nemCount++;
-                    }
-                }
-            }
-            
-            // Thêm dép (4 dép trong mỗi 20 ô)
-            for (let i = 0; i < TOTAL_CELLS; i += 20) {
-                let sandalCount = 0;
-                while (sandalCount < 4) {
-                    const randomPos = i + Math.floor(Math.random() * 20);
-                    if (randomPos < TOTAL_CELLS && randomPos !== 17 && randomPos !== 28 && randomPos !== 29 && randomPos !== 35 &&
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('railroad') &&
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('nem-chua') &&
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('rau-ma')) {
-                        const cell = document.getElementById(`cell-${randomPos}`);
-                        cell.classList.add('sandal');
-                        const icon = document.createElement('div');
-                        icon.className = 'cell-icon';
-                        icon.textContent = '🩴';
-                        cell.appendChild(icon);
-                        
-                        // Lưu trạng thái gốc
-                        cellOriginalState.set(randomPos, {
-                            classes: ['sandal'],
-                            icon: '🩴'
-                        });
-                        
-                        sandalCount++;
-                    }
-                }
-            }
-            
-            // Thêm rau má (3 rau má trong mỗi 15 ô)
-            for (let i = 0; i < TOTAL_CELLS; i += 15) {
-                let rauMaCount = 0;
-                while (rauMaCount < 3) {
-                    const randomPos = i + Math.floor(Math.random() * 15);
-                    if (randomPos < TOTAL_CELLS && randomPos !== 17 && randomPos !== 28 && randomPos !== 29 && randomPos !== 35 &&
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('railroad') &&
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('nem-chua') &&
-                        !document.getElementById(`cell-${randomPos}`).classList.contains('sandal')) {
-                        const cell = document.getElementById(`cell-${randomPos}`);
-                        cell.classList.add('rau-ma');
-                        const icon = document.createElement('div');
-                        icon.className = 'cell-icon';
-                        icon.textContent = '🌿';
-                        cell.appendChild(icon);
-                        
-                        // Lưu trạng thái gốc
-                        cellOriginalState.set(randomPos, {
-                            classes: ['rau-ma'],
-                            icon: '🌿'
-                        });
-                        
-                        rauMaCount++;
-                    }
-                }
-            }
-            
-            // Đánh dấu ô đặc biệt
-            // Ô 18 - Đinh Nạm
+
+            const usedPositions = new Set();
+            addItems('nem-chua', '🥠', 15, usedPositions);
+            addItems('sandal', '🩴', 20, usedPositions);
+            addItems('rau-ma', '🌿', 15, usedPositions);
+
             const cell18 = document.getElementById('cell-17');
             cell18.classList.add('dinh-nam');
             const icon18 = document.createElement('div');
             icon18.className = 'cell-icon';
             icon18.textContent = '👤';
             cell18.appendChild(icon18);
-            cellOriginalState.set(17, {
-                classes: ['dinh-nam'],
-                icon: '👤'
-            });
-            
-            // Ô 29, 30 - Thủ Đô
+            cellOriginalState.set(17, {classes: ['dinh-nam'], icon: '👤'});
+
             const cell29 = document.getElementById('cell-28');
             cell29.classList.add('thu-do');
             const icon29 = document.createElement('div');
             icon29.className = 'cell-icon';
             icon29.textContent = '🏙️';
             cell29.appendChild(icon29);
-            cellOriginalState.set(28, {
-                classes: ['thu-do'],
-                icon: '🏙️'
-            });
-            
+            cellOriginalState.set(28, {classes: ['thu-do'], icon: '🏙️'});
+
             const cell30 = document.getElementById('cell-29');
             cell30.classList.add('thu-do');
             const icon30 = document.createElement('div');
             icon30.className = 'cell-icon';
             icon30.textContent = '🏙️';
             cell30.appendChild(icon30);
-            cellOriginalState.set(29, {
-                classes: ['thu-do'],
-                icon: '🏙️'
-            });
-            
-            // Ô 36 đặc biệt
+            cellOriginalState.set(29, {classes: ['thu-do'], icon: '🏙️'});
+
             const cell36 = document.getElementById('cell-35');
             cell36.classList.add('special-36');
             const icon36 = document.createElement('div');
             icon36.className = 'cell-icon';
             icon36.textContent = '❓';
             cell36.appendChild(icon36);
-            cellOriginalState.set(35, {
-                classes: ['special-36'],
-                icon: '❓'
-            });
-            
-            // Cập nhật vị trí người chơi
+            cellOriginalState.set(35, {classes: ['special-36'], icon: '❓'});
+
             updatePlayerPosition();
         }
 
-        // Cập nhật vị trí người chơi trên bảng
+        function addItems(className, icon, count, usedPositions) {
+            let added = 0;
+            while (added < count) {
+                const randomPos = Math.floor(Math.random() * (TOTAL_CELLS - 2)) + 1;
+                if (!usedPositions.has(randomPos) && randomPos !== 17 && randomPos !== 28 && randomPos !== 29 && randomPos !== 35 && !document.getElementById(`cell-${randomPos}`).classList.contains('railroad')) {
+                    const cell = document.getElementById(`cell-${randomPos}`);
+                    cell.classList.add(className);
+                    const itemIcon = document.createElement('div');
+                    itemIcon.className = 'cell-icon';
+                    itemIcon.textContent = icon;
+                    cell.appendChild(itemIcon);
+                    cellOriginalState.set(randomPos, {classes: [className], icon: icon});
+                    usedPositions.add(randomPos);
+                    added++;
+                }
+            }
+        }
+
         function updatePlayerPosition() {
-            // Xóa lớp player từ tất cả các ô và khôi phục trạng thái gốc
             document.querySelectorAll('.cell.player').forEach(cell => {
                 const cellId = parseInt(cell.id.split('-')[1]);
                 cell.classList.remove('player');
-                
-                // Khôi phục trạng thái gốc
                 if (cellOriginalState.has(cellId)) {
                     const original = cellOriginalState.get(cellId);
                     cell.className = 'cell';
                     original.classes.forEach(cls => cell.classList.add(cls));
-                    
-                    // Xóa tất cả icon và thêm lại icon gốc
                     const icons = cell.querySelectorAll('.cell-icon');
                     icons.forEach(icon => icon.remove());
-                    
                     const newIcon = document.createElement('div');
                     newIcon.className = 'cell-icon';
                     newIcon.textContent = original.icon;
                     cell.appendChild(newIcon);
                 } else {
-                    // Nếu không có trạng thái gốc, chỉ xóa icon player
                     const icons = cell.querySelectorAll('.cell-icon');
-                    icons.forEach(icon => {
-                        if (icon.textContent === '👍') {
-                            icon.remove();
-                        }
-                    });
+                    icons.forEach(icon => { if (icon.textContent === '👍') icon.remove(); });
                 }
             });
-            
-            // Thêm lớp player vào ô hiện tại
+
             const currentCell = document.getElementById(`cell-${playerPosition}`);
-            currentCell.classList.add('player');
-            
-            // Lưu trạng thái hiện tại nếu chưa có
-            if (!cellOriginalState.has(playerPosition)) {
-                const currentClasses = Array.from(currentCell.classList).filter(cls => cls !== 'cell' && cls !== 'player');
-                const currentIcon = currentCell.querySelector('.cell-icon')?.textContent || '';
-                cellOriginalState.set(playerPosition, {
-                    classes: currentClasses,
-                    icon: currentIcon
-                });
+            if (currentCell) {
+                currentCell.classList.add('player');
+                if (!cellOriginalState.has(playerPosition)) {
+                    const currentClasses = Array.from(currentCell.classList).filter(cls => cls !== 'cell' && cls !== 'player');
+                    const currentIcon = currentCell.querySelector('.cell-icon')?.textContent || '';
+                    cellOriginalState.set(playerPosition, {classes: currentClasses, icon: currentIcon});
+                }
+                const icons = currentCell.querySelectorAll('.cell-icon');
+                icons.forEach(icon => icon.remove());
+                const playerIcon = document.createElement('div');
+                playerIcon.className = 'cell-icon';
+                playerIcon.textContent = '👍';
+                currentCell.appendChild(playerIcon);
             }
-            
-            // Xóa tất cả icon và thêm icon player
-            const icons = currentCell.querySelectorAll('.cell-icon');
-            icons.forEach(icon => icon.remove());
-            
-            const playerIcon = document.createElement('div');
-            playerIcon.className = 'cell-icon';
-            playerIcon.textContent = '👍';
-            currentCell.appendChild(playerIcon);
-            
-            // Cập nhật thông tin vị trí
             document.getElementById('player-position').textContent = playerPosition + 1;
         }
 
-        // Tung xúc xắc
         function rollDice() {
             if (isRolling) return;
-            
             isRolling = true;
             const dice = document.getElementById('dice');
             const rollButton = document.getElementById('roll-button');
             const message = document.getElementById('message');
-            
-            // Hiệu ứng quay xúc xắc
             dice.textContent = '?';
             dice.classList.add('rolling');
             rollButton.disabled = true;
-            
-            // Tạo số ngẫu nhiên từ 1 đến 6
+
             setTimeout(() => {
                 let diceValue = Math.floor(Math.random() * 6) + 1;
                 let originalValue = diceValue;
-                
-                // Áp dụng hiệu ứng Đinh Nạm
+
                 if (dinhNamEffect) {
                     diceValue = 1;
                     message.textContent = "Hiệu ứng Đinh Nạm! Bạn chỉ được 1 điểm.";
                     dinhNamEffect = false;
                     document.getElementById('dinh-nam-effect').textContent = 'Không';
-                }
-                // Áp dụng hiệu ứng Bão
-                else if (stormEffect && playerPosition >= 99) {
-                    diceValue = Math.floor(diceValue / 2);
-                    message.textContent = `Bão Xuân Quang! Bạn chỉ đi được ${diceValue} bước thay vì ${originalValue}.`;
-                }
-                // Áp dụng hiệu ứng dép
-                else if (sandalEffect) {
+                } else if (sandalEffect) {
                     diceValue = Math.floor(diceValue / 2);
                     message.textContent = `Hiệu ứng dép! Bạn chỉ đi được ${diceValue} bước thay vì ${originalValue}.`;
                     sandalEffect = false;
                     document.getElementById('sandal-effect').textContent = 'Không';
-                }
-                // Áp dụng hiệu ứng rau má (x2)
-                else if (doubleEffect) {
+                } else if (stormEffect && playerPosition >= 99) {
+                    diceValue = Math.floor(diceValue / 2);
+                    message.textContent = `Bão Xuân Quang! Bạn chỉ đi được ${diceValue} bước thay vì ${originalValue}.`;
+                } else if (doubleEffect) {
                     diceValue = diceValue * 2;
                     message.textContent = `Hiệu ứng Rau má! Bạn được ${diceValue} bước!`;
                     doubleEffect = false;
-                    document.getElementById('double-effect').textContent = 'Không';
-                }
-                else {
+                } else {
                     message.textContent = `Bạn đã tung được ${diceValue}!`;
                 }
-                
+
                 dice.textContent = diceValue;
                 dice.classList.remove('rolling');
                 rollButton.disabled = false;
                 isRolling = false;
-                
-                // Di chuyển người chơi
                 movePlayer(diceValue);
             }, 1000);
         }
 
-        // Di chuyển người chơi
         function movePlayer(stepsToMove) {
-            steps = stepsToMove;
-            document.getElementById('steps').textContent = steps;
-            
+            document.getElementById('steps').textContent = stepsToMove;
             let newPosition = playerPosition + stepsToMove;
-            
-            // Kiểm tra xem có đi qua ô 36 không
+
             if (!hasVisited36 && playerPosition <= 35 && newPosition >= 35) {
                 hasVisited36 = true;
                 setTimeout(showWheel, 500);
             }
-            
-            // Kiểm tra xem có đi qua ô Thủ Đô không
+
             if (!hasVisitedThuDo && playerPosition <= 29 && newPosition >= 28) {
                 hasVisitedThuDo = true;
                 setTimeout(showWheel, 500);
             }
-            
-            // Kiểm tra Bão Xuân Quang
+
             if (newPosition >= 99 && !stormEffect) {
                 stormEffect = true;
                 document.getElementById('storm-effect').textContent = 'Có';
                 document.getElementById('message').textContent = "Bão Xuân Quang đã đến! Mọi điểm xúc xắc nhận được sẽ giảm 1/2.";
             }
-            
-            // Nếu vượt quá ô cuối cùng, dừng ở ô cuối
+
             if (newPosition >= TOTAL_CELLS - 1) {
                 newPosition = TOTAL_CELLS - 1;
                 setTimeout(showVictory, 1000);
             }
-            
-            // Cập nhật vị trí mới
+
             playerPosition = newPosition;
             updatePlayerPosition();
-            
-            // Kiểm tra ô đặc biệt
             setTimeout(checkSpecialCell, 100);
         }
 
-        // Kiểm tra ô đặc biệt
         function checkSpecialCell() {
-            const currentCell = document.getElementById(`cell-${playerPosition}`);
             const message = document.getElementById('message');
             const originalState = cellOriginalState.get(playerPosition);
-            
             if (!originalState) return;
-            
-            // Kiểm tra đường tàu
+
             if (originalState.classes.includes('railroad')) {
                 if (nemChuaCount > 0) {
                     nemChuaCount--;
                     document.getElementById('nem-chua-count').textContent = nemChuaCount;
                     message.textContent = "Bạn đã sử dụng một nem chua để miễn nhiễm với đường tàu!";
                 } else {
-                    // Tìm đường tàu gần nhất phía sau
-                    let nearestRailroad = 0; // Mặc định là vị trí xuất phát
+                    let nearestRailroad = 0;
                     for (let i = playerPosition - 1; i >= 0; i--) {
                         if (cellOriginalState.has(i) && cellOriginalState.get(i).classes.includes('railroad')) {
                             nearestRailroad = i;
                             break;
                         }
                     }
-                    
                     playerPosition = nearestRailroad;
                     updatePlayerPosition();
                     message.textContent = `Ôi không! Bạn vấp phải đường tàu và phải quay lại ô ${playerPosition + 1}!`;
                 }
             }
-            
-            // Kiểm tra nem chua
+
             if (originalState.classes.includes('nem-chua') && nemChuaCount < 1) {
-                nemChuaCount = 1; // Tối đa 1 nem chua
+                nemChuaCount = 1;
                 document.getElementById('nem-chua-count').textContent = nemChuaCount;
-                message.textContent = "Tuyệt vời! Bạn nhận được một nem chua, giúp miễn nhiễm với đường tàu!";
+                message.textContent = "Tuyệt vời! Bạn nhận được một nem chua!";
             }
-            
-            // Kiểm tra dép
+
             if (originalState.classes.includes('sandal')) {
                 sandalEffect = true;
                 document.getElementById('sandal-effect').textContent = 'Có';
-                message.textContent = "Ôi không! Bạn bị mất dép. Lượt tiếp theo số điểm xúc xắc là n/2 lấy nguyên!";
+                message.textContent = "Ôi không! Bạn bị mất dép!";
             }
-            
-            // Kiểm tra rau má
+
             if (originalState.classes.includes('rau-ma')) {
-                rauMaCount++;
-                document.getElementById('rau-ma-count').textContent = rauMaCount;
-                
                 if (playerPosition >= 99) {
-                    // Từ ô 100 trở đi: nhân đôi điểm xúc xắc
                     doubleEffect = true;
-                    document.getElementById('double-effect').textContent = 'Có';
-                    message.textContent = "Tuyệt vời! Bạn nhận được rau má. Lượt tiếp theo điểm xúc xắc sẽ nhân 2!";
+                    message.textContent = "Tuyệt vời! Bạn nhận được rau má và được x2 điểm!";
                 } else {
-                    // Dưới ô 100: dịch chuyển đến sau đường tàu gần nhất phía trước
                     let nextRailroad = -1;
                     for (let i = playerPosition + 1; i < TOTAL_CELLS; i++) {
                         if (cellOriginalState.has(i) && cellOriginalState.get(i).classes.includes('railroad')) {
@@ -966,58 +342,38 @@
                             break;
                         }
                     }
-                    
                     if (nextRailroad !== -1) {
                         playerPosition = nextRailroad + 1;
-                        if (playerPosition >= TOTAL_CELLS) playerPosition = TOTAL_CELLS - 1;
                         updatePlayerPosition();
-                        message.textContent = `Rau má giúp bạn dịch chuyển đến sau đường tàu! Bạn đang ở ô ${playerPosition + 1}.`;
-                    } else {
-                        message.textContent = "Bạn nhận được rau má nhưng không có đường tàu phía trước!";
+                        message.textContent = `Rau má giúp bạn dịch chuyển đến sau đường tàu!`;
                     }
                 }
             }
-            
-            // Kiểm tra Đinh Nạm
+
             if (originalState.classes.includes('dinh-nam')) {
                 dinhNamEffect = true;
                 document.getElementById('dinh-nam-effect').textContent = 'Có';
-                message.textContent = "Bạn đã chạm chán một tên Đinh Nạm, lần tung xúc xắc tiếp sẽ chỉ được 1 điểm!";
+                message.textContent = "Bạn đã chạm chán một tên Đinh Nạm!";
             }
-            
-            // Kiểm tra Thủ Đô
-            if (originalState.classes.includes('thu-do') && !hasVisitedThuDo) {
-                thuDoEffect = true;
-                document.getElementById('thu-do-effect').textContent = 'Có';
-                message.textContent = "Bạn bị người Thủ Đô chặn lại và khinh thường!";
-            }
-            
-            // Tăng vòng
+
             round++;
             document.getElementById('round').textContent = round;
         }
 
-        // Hiển thị vòng quay may mắn
         function showWheel() {
             const wheelOverlay = document.getElementById('wheel-overlay');
             const wheel = document.getElementById('wheel');
             const wheelResult = document.getElementById('wheel-result');
-            
             wheelOverlay.style.display = 'flex';
             wheelResult.textContent = '';
-            
-            // Quay vòng quay
-            const spinDegrees = 1080 + Math.floor(Math.random() * 360); // Quay ít nhất 3 vòng
+            const spinDegrees = 1080 + Math.floor(Math.random() * 360);
             wheel.style.transform = `rotate(${spinDegrees}deg)`;
-            
-            // Xác định kết quả dựa trên góc quay
+
             setTimeout(() => {
                 const normalizedDegrees = spinDegrees % 360;
                 let result = '';
-                
                 if (normalizedDegrees < 180) {
                     result = 'Về đường tàu gần nhất phía sau';
-                    // Tìm đường tàu gần nhất phía sau
                     let nearestRailroad = 0;
                     for (let i = playerPosition - 1; i >= 0; i--) {
                         if (cellOriginalState.has(i) && cellOriginalState.get(i).classes.includes('railroad')) {
@@ -1030,66 +386,49 @@
                 } else {
                     result = 'X2 Xúc xắc';
                     doubleEffect = true;
-                    document.getElementById('double-effect').textContent = 'Có';
                 }
-                
                 wheelResult.textContent = `Kết quả: ${result}`;
             }, 3000);
         }
 
-        // Đóng vòng quay
         function closeWheel() {
             document.getElementById('wheel-overlay').style.display = 'none';
         }
 
-        // Hiển thị màn hình chiến thắng
         function showVictory() {
             document.getElementById('victory-overlay').style.display = 'flex';
             document.getElementById('roll-button').disabled = true;
         }
 
-        // Reset trò chơi
         function resetGame() {
             playerPosition = 0;
             nemChuaCount = 0;
-            rauMaCount = 0;
             sandalEffect = false;
             dinhNamEffect = false;
-            thuDoEffect = false;
-            stormEffect = false;
             doubleEffect = false;
+            stormEffect = false;
             round = 1;
-            steps = 0;
             hasVisited36 = false;
             hasVisitedThuDo = false;
-            
             document.getElementById('nem-chua-count').textContent = nemChuaCount;
-            document.getElementById('rau-ma-count').textContent = rauMaCount;
             document.getElementById('sandal-effect').textContent = 'Không';
             document.getElementById('dinh-nam-effect').textContent = 'Không';
-            document.getElementById('thu-do-effect').textContent = 'Không';
             document.getElementById('storm-effect').textContent = 'Không';
-            document.getElementById('double-effect').textContent = 'Không';
             document.getElementById('player-position').textContent = playerPosition + 1;
-            document.getElementById('steps').textContent = steps;
+            document.getElementById('steps').textContent = 0;
             document.getElementById('round').textContent = round;
             document.getElementById('message').textContent = 'Trò chơi đã được reset!';
             document.getElementById('victory-overlay').style.display = 'none';
             document.getElementById('roll-button').disabled = false;
-            
             createBoard();
         }
 
-        // Khởi tạo trò chơi
         function initGame() {
             createBoard();
-            
-            // Thêm sự kiện cho nút tung xúc xắc
             document.getElementById('roll-button').addEventListener('click', rollDice);
             document.getElementById('dice').addEventListener('click', rollDice);
         }
 
-        // Bắt đầu trò chơi khi trang được tải
         window.onload = initGame;
     </script>
 </body>
