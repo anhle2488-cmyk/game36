@@ -411,8 +411,8 @@
             <ul>
                 <li>Nhấn nút "Tung xúc xắc" để di chuyển</li>
                 <li>Mục tiêu: Đến ô cuối cùng (ô 136)</li>
-                <li>Nem chua: Bảo vệ bạn khỏi đường tàu</li>
-                <li>Giày: Làm giảm một nửa số bước đi</li>
+                <li>Nem chua: Bảo vệ bạn khỏi đường tàu (chỉ có trong 100 ô đầu)</li>
+                <li>Giày: Làm giảm một nửa số bước đi (1→1, 2→1, 3→2, 4→2, 5→2, 6→3)</li>
                 <li>Rau má: Nhân đôi số điểm xúc xắc</li>
                 <li>Đinh Nạm: Bạn chỉ được 1 điểm</li>
                 <li>Thủ đô (ô 29, 30): Mất 1 nem chua</li>
@@ -482,17 +482,19 @@
                 cellOriginalState.set(pos, {classes: ['railroad'], icon: '🚂'});
             });
 
-            // Thêm vật phẩm với số lượng giới hạn trong 15 ô
+            // Thêm vật phẩm với số lượng giới hạn trong mỗi 15 ô
             const usedPositions = new Set();
             
-            // Thêm rau má (tối đa 3 trong 15 ô)
-            addItemsWithLimit('rau-ma', '🌿', 3, 15, usedPositions);
+            // Thêm vật phẩm cho 100 ô đầu
+            for (let segment = 0; segment < 100; segment += 15) {
+                const segmentEnd = Math.min(segment + 15, 100);
+                addItemsInSegment('nem-chua', '🥠', 2, segment, segmentEnd, usedPositions);
+                addItemsInSegment('rau-ma', '🌿', 3, segment, segmentEnd, usedPositions);
+                addItemsInSegment('shoes', '👟', 4, segment, segmentEnd, usedPositions);
+            }
             
-            // Thêm giày (tối đa 4 trong 15 ô)
-            addItemsWithLimit('shoes', '👟', 4, 15, usedPositions);
-            
-            // Thêm nem chua (tối đa 2 trong 15 ô)
-            addItemsWithLimit('nem-chua', '🥠', 2, 15, usedPositions);
+            // Thêm rau má cho các ô từ 100 trở đi (3 rau má cách nhau 4 ô tối thiểu)
+            addRauMaAfter100();
 
             // Thêm các ô đặc biệt
             const specialCells = [
@@ -525,15 +527,15 @@
             updatePlayerPosition();
         }
 
-        // Thêm vật phẩm với giới hạn trong một khoảng ô
-        function addItemsWithLimit(className, icon, count, range, usedPositions) {
+        // Thêm vật phẩm trong một đoạn ô
+        function addItemsInSegment(className, icon, count, startPos, endPos, usedPositions) {
             let added = 0;
-            const startPos = Math.floor(Math.random() * (TOTAL_CELLS - range - 2)) + 1;
-            const endPos = Math.min(startPos + range, TOTAL_CELLS - 2);
             
             while (added < count) {
                 const randomPos = Math.floor(Math.random() * (endPos - startPos)) + startPos;
                 if (!usedPositions.has(randomPos) && 
+                    randomPos !== 0 && 
+                    randomPos !== TOTAL_CELLS - 1 &&
                     randomPos !== 17 && 
                     randomPos !== 28 && 
                     randomPos !== 29 && 
@@ -549,6 +551,36 @@
                     cell.appendChild(itemIcon);
                     cellOriginalState.set(randomPos, {classes: [className], icon: icon});
                     usedPositions.add(randomPos);
+                    added++;
+                }
+            }
+        }
+
+        // Thêm rau má sau ô 100 với khoảng cách tối thiểu 4 ô
+        function addRauMaAfter100() {
+            const usedPositions = new Set();
+            let added = 0;
+            let lastRauMaPos = 99; // Bắt đầu từ ô 100
+            
+            while (added < 3) {
+                // Tìm vị trí ngẫu nhiên từ 100 đến 135, cách vị trí trước đó ít nhất 4 ô
+                const randomPos = Math.floor(Math.random() * 36) + 100;
+                
+                if (randomPos - lastRauMaPos >= 4 && 
+                    !usedPositions.has(randomPos) &&
+                    randomPos !== TOTAL_CELLS - 1 &&
+                    !document.getElementById(`cell-${randomPos}`).classList.contains('railroad') &&
+                    !document.getElementById(`cell-${randomPos}`).classList.contains('push-back')) {
+                    
+                    const cell = document.getElementById(`cell-${randomPos}`);
+                    cell.classList.add('rau-ma');
+                    const itemIcon = document.createElement('div');
+                    itemIcon.className = 'cell-icon';
+                    itemIcon.textContent = '🌿';
+                    cell.appendChild(itemIcon);
+                    cellOriginalState.set(randomPos, {classes: ['rau-ma'], icon: '🌿'});
+                    usedPositions.add(randomPos);
+                    lastRauMaPos = randomPos;
                     added++;
                 }
             }
@@ -614,6 +646,19 @@
             });
         }
 
+        // Tính toán giá trị xúc xắc sau khi áp dụng hiệu ứng giày
+        function calculateShoesEffect(diceValue) {
+            switch(diceValue) {
+                case 1: return 1;
+                case 2: return 1;
+                case 3: return 2;
+                case 4: return 2;
+                case 5: return 2;
+                case 6: return 3;
+                default: return diceValue;
+            }
+        }
+
         // Tung xúc xắc
         function rollDice() {
             if (!gameStarted) {
@@ -641,7 +686,7 @@
                     dinhNamEffect = false;
                     document.getElementById('shoes-effect').textContent = 'Không';
                 } else if (shoesEffect) {
-                    diceValue = Math.floor(diceValue / 2);
+                    diceValue = calculateShoesEffect(diceValue);
                     message.textContent = `Hiệu ứng giày! Bạn chỉ đi được ${diceValue} bước thay vì ${originalValue}.`;
                     showEffect("HIỆU ỨNG GIÀY!\nGiảm một nửa điểm");
                     shoesEffect = false;
