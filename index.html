@@ -30,6 +30,7 @@
         .cell.thu-do { background: #e74c3c; }
         .cell.special-36 { background: #9c27b0; }
         .cell.player { background: #3498db; }
+        .cell.red-zone { background: #ffcccc; } /* Màu đỏ cho các ô từ 100 trở đi */
         .cell-number { position: absolute; top: 2px; left: 2px; font-size: 10px; }
         .cell-icon { font-size: 18px; }
         button { background: #e74c3c; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; }
@@ -42,6 +43,28 @@
         }
         .wheel { width: 300px; height: 300px; border-radius: 50%; background: conic-gradient(#e67e22 0% 50%, #3498db 50% 100%); transition: transform 3s; }
         .message-box { background: rgba(255,255,255,0.7); padding: 15px; border-radius: 10px; margin-bottom: 20px; width: 100%; }
+        
+        /* Phần chú thích */
+        .legend { 
+            background: rgba(255,255,255,0.7); 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .legend-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px;
+        }
+        .legend-icon { 
+            font-size: 20px; 
+            width: 30px; 
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +92,54 @@
         </div>
         
         <div class="board" id="board"></div>
+        
+        <!-- Phần chú thích -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-icon">🏁</div>
+                <div>Bắt đầu</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🏠</div>
+                <div>Kết thúc</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🚂</div>
+                <div>Đường tàu - Quay lại đường tàu gần nhất</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🥠</div>
+                <div>Nem chua - Miễn nhiễm đường tàu</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🩴</div>
+                <div>Dép - Giảm một nửa bước đi</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🌿</div>
+                <div>Rau má - Nhảy qua đường tàu hoặc x2 điểm</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">👤</div>
+                <div>Đinh Nạm - Chỉ được 1 điểm</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">🏙️</div>
+                <div>Thủ đô - Quay vòng quay</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">❓</div>
+                <div>Ô đặc biệt - Quay vòng quay</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon">👍</div>
+                <div>Vị trí người chơi</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-icon" style="background: #ffcccc; border-radius: 3px;">100+</div>
+                <div>Vùng bão</div>
+            </div>
+        </div>
     </div>
 
     <div class="victory-overlay" id="victory-overlay">
@@ -95,6 +166,12 @@
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.id = `cell-${i}`;
+                
+                // Thêm lớp red-zone cho các ô từ 100 trở đi
+                if (i >= 99) {
+                    cell.classList.add('red-zone');
+                }
+                
                 const cellNumber = document.createElement('div');
                 cellNumber.className = 'cell-number';
                 cellNumber.textContent = i + 1;
@@ -191,6 +268,10 @@
                     const original = cellOriginalState.get(cellId);
                     cell.className = 'cell';
                     original.classes.forEach(cls => cell.classList.add(cls));
+                    // Giữ lại lớp red-zone nếu ô từ 100 trở đi
+                    if (cellId >= 99) {
+                        cell.classList.add('red-zone');
+                    }
                     const icons = cell.querySelectorAll('.cell-icon');
                     icons.forEach(icon => icon.remove());
                     const newIcon = document.createElement('div');
@@ -207,7 +288,7 @@
             if (currentCell) {
                 currentCell.classList.add('player');
                 if (!cellOriginalState.has(playerPosition)) {
-                    const currentClasses = Array.from(currentCell.classList).filter(cls => cls !== 'cell' && cls !== 'player');
+                    const currentClasses = Array.from(currentCell.classList).filter(cls => cls !== 'cell' && cls !== 'player' && cls !== 'red-zone');
                     const currentIcon = currentCell.querySelector('.cell-icon')?.textContent || '';
                     cellOriginalState.set(playerPosition, {classes: currentClasses, icon: currentIcon});
                 }
