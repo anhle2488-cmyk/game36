@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#3498db">
     <meta name="description" content="Trò chơi Đường về nhà - Hành trình chinh phục Thanh Hóa">
     <title>Đường về nhà</title>
+    <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Đường về nhà&quot;,&quot;short_name&quot;:&quot;ĐườngVềNhà&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#a8edea&quot;,&quot;theme_color&quot;:&quot;#3498db&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%233498db'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🏠</text></svg>&quot;,&quot;sizes&quot;:&quot;100x100&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%233498db'/><text x='50' y='70' font-size='60' text-anchor='middle' fill='white'>🏠</text></svg>">
     <style>
         * { 
             margin: 0; 
@@ -13,6 +15,7 @@
             box-sizing: border-box; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
         
         body { 
@@ -20,6 +23,7 @@
             padding: 10px;
             min-height: 100vh;
             overflow-x: hidden;
+            user-select: none;
         }
         
         .container { 
@@ -284,6 +288,11 @@
             margin-bottom: 15px;
         }
         
+        .install-btn {
+            background: #2ecc71;
+            margin-top: 10px;
+        }
+        
         @media (min-width: 768px) {
             .board {
                 grid-template-columns: repeat(12, 1fr);
@@ -317,10 +326,46 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Thêm hiệu ứng loading */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Loading screen -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <h2>Đang tải trò chơi...</h2>
+    </div>
+
+    <div class="container" style="display: none;" id="game-container">
         <h1>Đường về nhà 🏠</h1>
         
         <div class="message-box" id="message">Chào mừng! Nhấn "Bắt đầu" để xem hướng dẫn.</div>
@@ -336,6 +381,7 @@
             <div class="dice-container">
                 <div class="dice" id="dice">?</div>
                 <button id="roll-button">Bắt đầu</button>
+                <button class="install-btn" id="install-btn" style="display: none;">Cài đặt App</button>
             </div>
             
             <div class="status-row">
@@ -412,7 +458,7 @@
                 <li>Nhấn nút "Tung xúc xắc" để di chuyển</li>
                 <li>Mục tiêu: Đến ô cuối cùng (ô 136)</li>
                 <li>Nem chua: Bảo vệ bạn khỏi đường tàu (chỉ có trong 100 ô đầu)</li>
-                <li>Giày: Làm giảm một nửa số bước đi (1→1, 2→1, 3→2, 4→2, 5→2, 6→3)</li>
+                <li>Giày: Làm giảm số bước đi (1→1, 2→1, 3→2, 4→2, 5→2, 6→3)</li>
                 <li>Rau má: Nhân đôi số điểm xúc xắc</li>
                 <li>Đinh Nạm: Bạn chỉ được 1 điểm</li>
                 <li>Thủ đô (ô 29, 30): Mất 1 nem chua</li>
@@ -429,12 +475,21 @@
     </div>
 
     <script>
+        // Ẩn loading screen sau khi tải xong
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('game-container').style.display = 'block';
+            }, 1000);
+        });
+
         // Biến toàn cục
         let playerPosition = 0, nemChuaCount = 0, shoesEffect = false, dinhNamEffect = false, doubleEffect = false, stormEffect = false;
         let round = 1, isRolling = false, hasVisited36 = false, hasVisitedThuDo = false;
         const TOTAL_CELLS = 136;
         const cellOriginalState = new Map();
         let gameStarted = false;
+        let deferredPrompt;
 
         // Tạo bàn chơi
         function createBoard() {
@@ -471,7 +526,7 @@
             }
 
             // Thêm đường tàu ở các vị trí mới
-            const railroadPositions = [20, 44, 69, 97]; // 21, 45, 70, 98 (index bắt đầu từ 0)
+            const railroadPositions = [20, 44, 69, 97];
             railroadPositions.forEach(pos => {
                 const cell = document.getElementById(`cell-${pos}`);
                 cell.classList.add('railroad');
@@ -560,10 +615,9 @@
         function addRauMaAfter100() {
             const usedPositions = new Set();
             let added = 0;
-            let lastRauMaPos = 99; // Bắt đầu từ ô 100
+            let lastRauMaPos = 99;
             
             while (added < 3) {
-                // Tìm vị trí ngẫu nhiên từ 100 đến 135, cách vị trí trước đó ít nhất 4 ô
                 const randomPos = Math.floor(Math.random() * 36) + 100;
                 
                 if (randomPos - lastRauMaPos >= 4 && 
@@ -595,7 +649,6 @@
                     const original = cellOriginalState.get(cellId);
                     cell.className = 'cell';
                     original.classes.forEach(cls => cell.classList.add(cls));
-                    // Giữ lại lớp red-zone nếu ô từ 100 trở đi
                     if (cellId >= 99) {
                         cell.classList.add('red-zone');
                     }
@@ -636,7 +689,6 @@
             effectMessage.textContent = message;
             effectOverlay.style.display = 'flex';
             
-            // Tự động ẩn sau 2 giây hoặc khi người dùng chạm
             setTimeout(() => {
                 effectOverlay.style.display = 'none';
             }, 2000);
@@ -894,6 +946,24 @@
             createBoard();
         }
 
+        // PWA - Cài đặt ứng dụng
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-btn').style.display = 'block';
+        });
+
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('install-btn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
         // Khởi tạo trò chơi
         function initGame() {
             createBoard();
@@ -914,10 +984,11 @@
             });
             
             // Hiển thị hướng dẫn khi bắt đầu
-            showTutorial();
+            setTimeout(showTutorial, 500);
         }
 
-        window.onload = initGame;
+        // Chạy game khi trang đã tải xong
+        window.addEventListener('load', initGame);
     </script>
 </body>
 </html>
